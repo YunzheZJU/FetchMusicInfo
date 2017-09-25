@@ -31,7 +31,6 @@ def fetchText(keyword):
     keyword = keyword.encode("utf-8")
     # print keyword
     # print type(keyword)
-    # print type("现在就决定你要爱我")
     session = requests.session()
     headers = {
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
@@ -106,8 +105,9 @@ if "Thumbs.db" in fileList:
     fileList.remove("Thumbs.db")
 counter = 1
 for filename in fileList:
-    reg = r'\d+\.(.*?)\s*-\s*(.*?)(\s|\.|\(|\xa3\xa8)'
-    songname = re.match(reg, filename).group(2)
+    # reg = r'\d+\.(.*?)\s*-\s*(.*?)(\s|\.|\(|\xa3\xa8)'
+    reg = r'\d+\.(.*)\.+'
+    songname = re.match(reg, filename).group(1)
     keyword = songname.decode("gbk")
     print keyword
     # print type(keyword)
