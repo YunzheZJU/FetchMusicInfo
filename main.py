@@ -31,7 +31,21 @@ def fetchText(keyword):
     keyword = keyword.encode("utf-8")
     # print keyword
     # print type(keyword)
+    print urllib.quote(keyword).replace("%20", "+")
     session = requests.session()
+    # headers = {
+    #         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+    #         'Accept-Encoding': 'gzip, deflate, br',
+    #         'Accept-Language': 'zh-CN,zh;q=0.8',
+    #         'Cache-Control': 'no-cache',
+    #         'Connection': 'keep-alive',
+    #         'DNT': '1',
+    #         'Host': 'baike.baidu.com',
+    #         'Pragma': 'no-cache',
+    #         'Referer': 'https://baike.baidu.com/',
+    #         'Upgrade-Insecure-Requests': '1',
+    #         'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36'
+    # }
     headers = {
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
             'Accept-Encoding': 'gzip, deflate, br',
@@ -39,30 +53,36 @@ def fetchText(keyword):
             'Cache-Control': 'no-cache',
             'Connection': 'keep-alive',
             'DNT': '1',
-            'Host': 'baike.baidu.com',
+            'Host': 'zh.moegirl.org',
             'Pragma': 'no-cache',
-            'Referer': 'https://baike.baidu.com/',
             'Upgrade-Insecure-Requests': '1',
             'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36'
     }
     print "Waiting for session..."
-    resp = session.get('https://baike.baidu.com/search/word?word=' + urllib.quote(keyword), headers=headers)
+    # resp = session.get('https://baike.baidu.com/search/word?word=' + urllib.quote(keyword), headers=headers)
+    resp = session.get('https://zh.moegirl.org/index.php?search=' + urllib.quote(keyword), headers=headers)
     print "Get session."
     text = resp.content.replace("\n", "")
-    reg = r'searchResult'
+    # reg = r'searchResult'
+    reg = r'search-exists'
     # print type(text)
     # print urllib.quote(keyword)
     if re.search(reg, text):
+        reg = r'<div class=\'mw-search-result-heading\'><a href="(.*?)"'
+        result = re.search(reg, text)
+        if result:
+            print result.group(1)
         print "Error in searching keyword."
         return None
-    if fetchCover(text) == 0:
-        return None
+    # if fetchCover(text) == 0:
+    #     return None
     # reg = r'summary-pic'
     # if re.search(reg, text) is None:
     #     print "Error in finding cover."
     #     return None
     try:
-        reg = r'<div class="lemma-summary" label-module="lemmaSummary">(.*?)<div class="configModuleBanner">'
+        # reg = r'<div class="lemma-summary" label-module="lemmaSummary">(.*?)<div class="configModuleBanner">'
+        reg = r'</h2>(.*?)<h3>'
         text = re.search(reg, text).group(1)
         reg = r'<.*?>'
         search_result = re.search(reg, text)
