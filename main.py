@@ -7,7 +7,8 @@ import shutil
 
 
 def fetchCover(text):
-    reg = r'<div class="summary-pic">.*?(https.*.jpg).*?picAlbumBtn'
+    # reg = r'<div class="summary-pic">.*?(https.*.jpg).*?picAlbumBtn'
+    reg = r'class="image">.*?src="(https.*?)"'
     result = re.search(reg, text)
     if result:
         img_addr = result.group(1)
@@ -64,46 +65,36 @@ def fetchText(keyword):
     print "Get session."
     text = resp.content.replace("\n", "")
     # reg = r'searchResult'
-    reg = r'search-exists'
+    reg = r'search-results'
     # print type(text)
-    # print urllib.quote(keyword)
     if re.search(reg, text):
         reg = r'<div class=\'mw-search-result-heading\'><a href="(.*?)"'
         result = re.search(reg, text)
         if result:
-            print result.group(1)
-        print "Error in searching keyword."
+            text = session.get('https://zh.moegirl.org' + result.group(1)).content.replace("\n", "")
+        else:
+            print "Error in searching keyword."
+            return None
+    if fetchCover(text) == 0:
         return None
-    # if fetchCover(text) == 0:
-    #     return None
     # reg = r'summary-pic'
     # if re.search(reg, text) is None:
     #     print "Error in finding cover."
     #     return None
     try:
         # reg = r'<div class="lemma-summary" label-module="lemmaSummary">(.*?)<div class="configModuleBanner">'
-        reg = r'</h2>(.*?)<h3>'
-        text = re.search(reg, text).group(1)
-        reg = r'<.*?>'
-        search_result = re.search(reg, text)
-        # print "Replacing tags..."
-        while search_result:
-            text = text.replace(search_result.group(0), "")
-            search_result = re.search(reg, text)
-        reg = r'\[\d+\]'
-        search_result = re.search(reg, text)
-        # print "Replacing numbers..."
-        while search_result:
-            text = text.replace(search_result.group(0), "")
-            search_result = re.search(reg, text)
-        # print "Replacing spaces..."
+        reg = r'</span></h2>(.*?)<h\d>'
+        text = re.search(reg, text).group(1).replace("&nbsp;", " ").replace("&amp;", "&").replace('&gt;', '>') \
+            .replace('&lt;', '<').replace('&#91;', '[').replace('&#93;', ']')
         # print text
-        reg = r'&nbsp;'
-        search_result = re.search(reg, text)
-        # print search_result
-        if search_result is not None:
-            # print "None"
-            text = text.replace(search_result.group(0), "")
+        # return None
+        regs = [r'<style>(.*?)</style>', r'<script>(.*?)</script>', r'<.*?>', r'\[\d+\]', r'【试听】', r'显示视频']
+        for r in regs:
+            search_result = re.search(r, text)
+            while search_result:
+                text = text.replace(search_result.group(0), "")
+                search_result = re.search(r, text)
+        print text
         return text
     except:
         print "Error in replacing."
@@ -126,18 +117,21 @@ if "Thumbs.db" in fileList:
 counter = 1
 for filename in fileList:
     # reg = r'\d+\.(.*?)\s*-\s*(.*?)(\s|\.|\(|\xa3\xa8)'
-    reg = r'\d+\.(.*)\.+'
-    songname = re.match(reg, filename).group(1)
-    keyword = songname.decode("gbk")
-    print keyword
-    # print type(keyword)
-    Text = fetchText(keyword)
-    if Text is None:
-        print songname.decode("gbk") + "  ERROR"
-        continue
-    with open(os.path.join(dir_text, str(counter) + "." + songname + ".txt"), "w") as f:
-        f.write(Text)
-    shutil.move(os.path.join(dir_original, filename), os.path.join(dir_music, str(counter) + "." + songname + ".mp3"))
-    print songname.decode("gbk") + "  OK"
-    counter += 1
+    reg = r'\d+\.(.*)(\.+.*)'
+    result = re.match(reg, filename)
+    if result:
+        songname = result.group(1)
+        postfix = result.group(2)
+        keyword = songname.decode("gbk")
+        print keyword
+        # print type(keyword)
+        Text = fetchText(keyword)
+        if Text is None:
+            print songname.decode("gbk") + "  ERROR"
+            continue
+        with open(os.path.join(dir_text, str(counter) + "." + songname + ".txt"), "w") as f:
+            f.write(Text)
+        shutil.move(os.path.join(dir_original, filename), os.path.join(dir_music, str(counter) + "." + songname + postfix))
+        print songname.decode("gbk") + "  OK"
+        counter += 1
 
