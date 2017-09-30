@@ -7,7 +7,6 @@ import shutil
 
 
 def fetchCover(text):
-    # reg = r'<div class="summary-pic">.*?(https.*.jpg).*?picAlbumBtn'
     reg = r'class="image">.*?src="(https.*?)"'
     result = re.search(reg, text)
     if result:
@@ -27,26 +26,9 @@ def fetchCover(text):
 
 
 def fetchText(keyword):
-    # print keyword
-    # print type(keyword)
     keyword = keyword.encode("utf-8")
-    # print keyword
-    # print type(keyword)
     print urllib.quote(keyword).replace("%20", "+")
     session = requests.session()
-    # headers = {
-    #         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-    #         'Accept-Encoding': 'gzip, deflate, br',
-    #         'Accept-Language': 'zh-CN,zh;q=0.8',
-    #         'Cache-Control': 'no-cache',
-    #         'Connection': 'keep-alive',
-    #         'DNT': '1',
-    #         'Host': 'baike.baidu.com',
-    #         'Pragma': 'no-cache',
-    #         'Referer': 'https://baike.baidu.com/',
-    #         'Upgrade-Insecure-Requests': '1',
-    #         'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36'
-    # }
     headers = {
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
             'Accept-Encoding': 'gzip, deflate, br',
@@ -60,13 +42,10 @@ def fetchText(keyword):
             'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36'
     }
     print "Waiting for session..."
-    # resp = session.get('https://baike.baidu.com/search/word?word=' + urllib.quote(keyword), headers=headers)
     resp = session.get('https://zh.moegirl.org/index.php?search=' + urllib.quote(keyword), headers=headers)
     print "Get session."
     text = resp.content.replace("\n", "")
-    # reg = r'searchResult'
     reg = r'search-results'
-    # print type(text)
     if re.search(reg, text):
         reg = r'<div class=\'mw-search-result-heading\'><a href="(.*?)"'
         result = re.search(reg, text)
@@ -77,17 +56,10 @@ def fetchText(keyword):
             return None
     if fetchCover(text) == 0:
         return None
-    # reg = r'summary-pic'
-    # if re.search(reg, text) is None:
-    #     print "Error in finding cover."
-    #     return None
     try:
-        # reg = r'<div class="lemma-summary" label-module="lemmaSummary">(.*?)<div class="configModuleBanner">'
         reg = r'</span></h2>(.*?)<h\d>'
         text = re.search(reg, text).group(1).replace("&nbsp;", " ").replace("&amp;", "&").replace('&gt;', '>') \
             .replace('&lt;', '<').replace('&#91;', '[').replace('&#93;', ']')
-        # print text
-        # return None
         regs = [r'<style>(.*?)</style>', r'<script>(.*?)</script>', r'<.*?>', r'\[\d+\]', r'【试听】', r'显示视频']
         for r in regs:
             search_result = re.search(r, text)
@@ -116,7 +88,6 @@ if "Thumbs.db" in fileList:
     fileList.remove("Thumbs.db")
 counter = 1
 for filename in fileList:
-    # reg = r'\d+\.(.*?)\s*-\s*(.*?)(\s|\.|\(|\xa3\xa8)'
     reg = r'\d+\.(.*)(\.+.*)'
     result = re.match(reg, filename)
     if result:
@@ -124,7 +95,6 @@ for filename in fileList:
         postfix = result.group(2)
         keyword = songname.decode("gbk")
         print keyword
-        # print type(keyword)
         Text = fetchText(keyword)
         if Text is None:
             print songname.decode("gbk") + "  ERROR"
